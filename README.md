@@ -89,24 +89,14 @@ Once your code can clear all tests, your autodiff module is almost ready to trai
 - Implement all missing operators necessary for a logistic regression, e.g. log, reduce_sum. 
 - Write a simple training loop that updates parameters using gradients computed from autodiff module.
 
-### Grading rubrics
-- autodiff_test.test_identity ... 1 pt
-- autodiff_test.test_add_by_const ... 1 pt
-- autodiff_test.test_mul_by_const ... 1 pt
-- autodiff_test.test_add_two_vars ... 1 pt
-- autodiff_test.test_mul_two_vars ... 1 pt
-- autodiff_test.test_add_mul_mix_1 ... 2 pt
-- autodiff_test.test_add_mul_mix_2 ... 2 pt
-- autodiff_test.test_add_mul_mix_3 ... 2 pt
-- autodiff_test.test_grad_of_grad ... 2 pt
-- autodiff_test.test_matmul_two_vars ... 2 pt
 
-- bonus (training logistic regession) ... 5 pt
 
-## Submitting your work
+## 学习笔记
+ 材料： 
+http://dlsys.cs.washington.edu/pdf/lecture4.pdf
+- #### 构建前向计算图，计算前向
 
-Please submit your autodiff.tar.gz to Canvas dropbox under [Assignment 1](https://canvas.uw.edu/courses/1199471/assignments/4214861).
-```bash
-# compress
-tar czvf assignment1.tar.gz assignment1/
-```
+- #### 反向构建计算图，计算梯度
+
+- #### Tensorflow中 op的概念
+    如何表示上述的图？tensorflow中引入op的概念

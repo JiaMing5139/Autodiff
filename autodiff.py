@@ -1,6 +1,7 @@
+# -*- coding:UTF-8 -*-
 import numpy as np
 
-
+# -*- coding:UTF-8 -*-
 
 
 
@@ -81,6 +82,7 @@ class Op(object):
         """
         raise NotImplementedError
 
+    # gradient是计算向后继续传递的grad，output_grad是本节点的grad
     def gradient(self, node, output_grad):
         """Given value of output gradient, compute gradient contributions to each input node.
 
@@ -141,10 +143,13 @@ class MulOp(Op):
     def compute(self, node, input_vals):
         """Given values of two input nodes, return result of element-wise multiplication."""
         """TODO: Your code here"""
+        assert len(input_vals) == 2
+        return input_vals[0] * input_vals[1]
 
     def gradient(self, node, output_grad):
         """Given gradient of multiply node, return gradient contributions to each input."""
         """TODO: Your code here"""
+
 
 class MulByConstOp(Op):
     """Op to element-wise multiply a nodes by a constant."""
@@ -310,13 +315,19 @@ def gradients(output_node, node_list):
     # Traverse graph in reverse topological order given the output_node that we are taking gradient wrt.
     reverse_topo_order = reversed(find_topo_sort([output_node]))
 
+    node_to_output_grad[output_node] =  [oneslike_op(output_node)]
+    #拓扑排序，找到入度为0的节点排序，就是正向图，reverse后为逆序的拓扑
     for reverse_node in reverse_topo_order:
-        grad_in = 0
-        #获取这个节点所有反向传播过来的delta并求和，当成一个output_grad
+        if len(reverse_node.inputs) > 0:
+            output_grad = node_to_output_grad.get(reverse_node)
+            input_grads = reverse_node.op.gradient(reverse_node,output_grad)
+            #input_grad 包含对每一个input_node的grad
+            print(type(input_grads))
 
-        for grad in node_to_output_grads_list[reverse_node]:
-            grad_in += grad
-        pass
+            #将新算出来的output_grad（也就是这个节点的grad）写入到,node_to_output_grad这个map中，方便计算
+            for input_grad,node in zip(input_grads,reverse_node.inputs):
+                node_to_output_grad[node] = input_grad
+
     """TODO: Your code here"""
 
 
