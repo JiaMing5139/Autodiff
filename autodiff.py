@@ -36,6 +36,14 @@ class Node(object):
 
     def __mul__(self, other):
         """TODO: Your code here"""
+        """mul two nodes return a new node."""
+        if isinstance(other, Node):
+            new_node = mul_op(self, other)
+        else:
+            # Add by a constant stores the constant in the new node's const_attr field.
+            # 'other' argument is a constant
+            new_node = mul_byconst_op(self, other)
+        return new_node
 
     # Allow left-hand-side add and multiply.
     __radd__ = __add__
@@ -96,6 +104,24 @@ class Op(object):
         A list of gradient contributions to each input node respectively.
         """
         raise NotImplementedError
+# class x倒数Op(Op):
+#     def __call__(self, node_A):
+#         new_node = Op.__call__(self)
+#         new_node.inputs = [node_A]
+#         new_node.name = "(1/%s)" % (node_A.name)
+#         return new_node
+#
+#     def compute(self, node, input_vals):
+#         """Given values of two input nodes, return result of element-wise addition."""
+#         assert len(input_vals) == 1
+#         assert input_vals != 0
+#         return 1/input_vals
+#
+#     def gradient(self, node, output_grad):
+#         """Given gradient of add node, return gradient contributions to each input."""
+#         return [1/(node.inputs*node.inputs)*node.inputs[0] * -1]
+#
+#     pass
 
 class AddOp(Op):
     """Op to element-wise add two nodes."""
@@ -149,6 +175,7 @@ class MulOp(Op):
     def gradient(self, node, output_grad):
         """Given gradient of multiply node, return gradient contributions to each input."""
         """TODO: Your code here"""
+        return [node.inputs[1]*output_grad,node.inputs[0]*output_grad]
 
 
 class MulByConstOp(Op):
@@ -163,10 +190,13 @@ class MulByConstOp(Op):
     def compute(self, node, input_vals):
         """Given values of input node, return result of element-wise multiplication."""
         """TODO: Your code here"""
+        assert len(input_vals) == 1
+        return input_vals[0] * node.const_attr
 
     def gradient(self, node, output_grad):
         """Given gradient of multiplication node, return gradient contribution to input."""
         """TODO: Your code here"""
+        return [node.const_attr*output_grad]
 
 class MatMulOp(Op):
     """Op to matrix multiply two nodes."""
@@ -284,8 +314,13 @@ class Executor:
         node_to_val_map = dict(feed_dict)
         # Traverse graph in topological sort order and compute values for all nodes.
         topo_order = find_topo_sort(self.eval_node_list)
+
         """TODO: Your code here"""
 
+        for topo_node in topo_order:
+            if len(topo_node.inputs) != 0:
+                input_data = [node_to_val_map[i] for i in topo_node.inputs] # 从dict中获取 feed_dict的值
+                node_to_val_map[topo_node] = topo_node.op.compute(topo_node, input_data)
         # Collect node values.
         node_val_results = [node_to_val_map[node] for node in self.eval_node_list]
         return node_val_results
@@ -315,18 +350,20 @@ def gradients(output_node, node_list):
     # Traverse graph in reverse topological order given the output_node that we are taking gradient wrt.
     reverse_topo_order = reversed(find_topo_sort([output_node]))
 
-    node_to_output_grad[output_node] =  [oneslike_op(output_node)]
+    node_to_output_grad[output_node] = [oneslike_op(output_node)]
     #拓扑排序，找到入度为0的节点排序，就是正向图，reverse后为逆序的拓扑
     for reverse_node in reverse_topo_order:
         if len(reverse_node.inputs) > 0:
             output_grad = node_to_output_grad.get(reverse_node)
-            input_grads = reverse_node.op.gradient(reverse_node,output_grad)
+            input_grads = reverse_node.op.gradient(reverse_node, output_grad)
             #input_grad 包含对每一个input_node的grad
             print(type(input_grads))
 
             #将新算出来的output_grad（也就是这个节点的grad）写入到,node_to_output_grad这个map中，方便计算
             for input_grad,node in zip(input_grads,reverse_node.inputs):
-                node_to_output_grad[node] = input_grad
+                node_to_output_grad[node] = input_grad #ouput_node可能由很多节input_grad组成
+
+
 
     """TODO: Your code here"""
 
